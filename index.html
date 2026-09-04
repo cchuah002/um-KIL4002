@@ -111,19 +111,6 @@ navigator.geolocation.getCurrentPosition(function(position){
     if (isWithin(0,0,23,59)) {
       submissionType = "Submission 1";
       localStorage.setItem("attend1","done");
-    }
-
-    // ⏰ Submission #2
-    else if (isWithin(0,0,23,59)) {
-
-      if (localStorage.getItem("attend1") === "done") {
-        submissionType = "Submission 2";
-      } else {
-        document.getElementById("statusText").innerHTML =
-          "❌ Must complete Submission #1 first";
-        return;
-      }
-
     } else {
       document.getElementById("statusText").innerHTML =
         "❌ Outside submission time";
