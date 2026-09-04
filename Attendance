@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 <head>
   <title>UM Attendance Verification</title>
@@ -8,17 +9,21 @@
       text-align: center;
       margin-top: 40px;
     }
-    #debugPanel {
-      display: none;
-      border: 1px solid #ccc;
-      padding: 15px;
-      margin-top: 20px;
-      text-align: left;
-      width: 80%;
-      margin-left: auto;
-      margin-right: auto;
-      background: #f7f7f7;
-    }
+
+```
+#debugPanel {
+  display: none;
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin-top: 20px;
+  text-align: left;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  background: #f7f7f7;
+}
+```
+
   </style>
 </head>
 
@@ -35,163 +40,213 @@
 </div>
 
 <script>
+
 /* =========================
-   🔐 DEBUG MODE (SAFE)
+   🔐 DEBUG MODE
 ========================= */
+
 const urlParams = new URLSearchParams(window.location.search);
-const DEBUG = (urlParams.get("debug") || "").trim() === "UM_ADMIN_2026";
+
+const DEBUG =
+  (urlParams.get("debug") || "").trim() === "UM_ADMIN_2026";
+
 
 if (DEBUG) {
   document.getElementById("debugPanel").style.display = "block";
   console.log("DEBUG MODE ACTIVE");
 }
 
+
 /* =========================
    CONFIG
 ========================= */
+
 const classLat = 3.116635724520063;
 const classLon = 101.65595507854434;
+
 const allowedRadius = 200;
 
-/* =========================
-   TIME WINDOWS
-========================= */
-function isWithin(startH, startM, endH, endM){
-  const now = new Date();
-  const start = new Date(); start.setHours(startH, startM, 0);
-  const end = new Date(); end.setHours(endH, endM, 0);
-  return now >= start && now <= end;
-}
 
 /* =========================
    DISTANCE FUNCTION
 ========================= */
-function toRad(x){ return x * Math.PI / 180; }
 
-function calculateDistance(lat1, lon1, lat2, lon2){
+function toRad(x) {
+  return x * Math.PI / 180;
+}
+
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+
   const R = 6371000;
+
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
 
   const a =
-    Math.sin(dLat/2)**2 +
+    Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(lat1)) *
     Math.cos(toRad(lat2)) *
-    Math.sin(dLon/2)**2;
+    Math.sin(dLon / 2) ** 2;
 
-  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return 2 * R *
+    Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1 - a)
+    );
 }
+
 
 /* =========================
    MAIN
 ========================= */
-navigator.geolocation.getCurrentPosition(function(position){
 
-  const lat = position.coords.latitude;
-  const lon = position.coords.longitude;
-  const acc = position.coords.accuracy;
+navigator.geolocation.getCurrentPosition(
 
-  const dist = calculateDistance(classLat, classLon, lat, lon);
+  function(position) {
 
-  let status = (dist <= allowedRadius) ? "VALID" : "INVALID";
-  let submissionType = "";
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    const acc = position.coords.accuracy;
 
-  /* =========================
-     SAFE FLOW CONTROL
-  ========================= */
+    const dist =
+      calculateDistance(
+        classLat,
+        classLon,
+        lat,
+        lon
+      );
 
-  if (DEBUG) {
 
-    // 🔥 FORCE OVERRIDE EVERYTHING
-    submissionType = "DEBUG MODE";
+    /* =========================
+       LOCATION STATUS
+    ========================= */
 
-  } else {
+    const status =
+      (dist <= allowedRadius)
+        ? "VALID"
+        : "INVALID";
 
-    // ⏰ Submission #1
-    if (isWithin(12,50,13,0)) {
-      submissionType = "Submission 1";
-      localStorage.setItem("attend1","done");
-    }
 
-    // ⏰ Submission #2
-    else if (isWithin(14,30,16,0)) {
+    /* =========================
+       SUBMISSION TYPE
+    ========================= */
 
-      if (localStorage.getItem("attend1") === "done") {
-        submissionType = "Submission 2";
-      } else {
-        document.getElementById("statusText").innerHTML =
-          "❌ Must complete Submission #1 first";
-        return;
-      }
+    const submissionType = "Attendance";
 
-    } else {
-      document.getElementById("statusText").innerHTML =
-        "❌ Outside submission time";
-      return;
-    }
-  }
 
-  /* =========================
-     FORM URL
-  ========================= */
-  const formURL =
-    "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=qbE7psJIi0SGkzMXsAyn-3ei0yfHnBpAl7nvufhpYcZUMlhWNlg3NzAwVUVNNk5UOTVZQzhLWEVMSy4u"
-    + "&r958810d0e940488d91f69e1d7e8b9287=" + encodeURIComponent(lat)
-    + "&r27336dc45ec8471c8f0e826133916aea=" + encodeURIComponent(lon)
-    + "&r4e931dc60dfa4ae0a91683796aa34472=" + encodeURIComponent(dist.toFixed(2))
-    + "&r12931d7000c84132a2aeca7033fedbaa=" + encodeURIComponent(status)
-    + "&r097aa67817864881a7c8c01602808a1b=" + encodeURIComponent(submissionType);
+    /* =========================
+       FORM URL
+    ========================= */
 
-  /* =========================
-     OUTPUT
-  ========================= */
+    /*
+      IMPORTANT:
+      Replace the parameter names below with the
+      actual pre-filled field parameters generated
+      by Microsoft Forms.
+    */
 
-  document.getElementById("details").innerHTML =
-    "Distance: " + dist.toFixed(2) + " m<br>" +
-    "Status: " + status + "<br>" +
-    "Type: " + submissionType;
+    const formURL =
+      "https://forms.cloud.microsoft/r/5vjGf91u0e"
+      + "?Latitude=" + encodeURIComponent(lat)
+      + "&Longitude=" + encodeURIComponent(lon)
+      + "&Distance=" + encodeURIComponent(dist.toFixed(2))
+      + "&Status=" + encodeURIComponent(status)
+      + "&SubmissionType=" + encodeURIComponent(submissionType);
 
-  if (DEBUG) {
 
-    document.getElementById("statusText").innerHTML =
-      "🛠 Debug Mode (No Redirect)";
+    /* =========================
+       DISPLAY DETAILS
+    ========================= */
 
-    document.getElementById("debugContent").innerHTML =
-      "Lat: " + lat + "<br>" +
-      "Lon: " + lon + "<br>" +
-      "Distance: " + dist.toFixed(2) + "<br>" +
-      "Accuracy: ±" + acc.toFixed(2) + "<br>" +
+    document.getElementById("details").innerHTML =
+      "Distance: " + dist.toFixed(2) + " m<br>" +
       "Status: " + status + "<br>" +
       "Type: " + submissionType;
 
-    document.getElementById("debugLink").href = formURL;
 
-    console.log("FORM URL:", formURL);
+    /* =========================
+       DEBUG MODE
+    ========================= */
 
-  } else {
+    if (DEBUG) {
 
-    if (status === "VALID") {
       document.getElementById("statusText").innerHTML =
-        "✅ Verified. Redirecting...";
+        "🛠 Debug Mode (No Redirect)";
 
-      setTimeout(() => {
-        window.location.href = formURL;
-      }, 1200);
+      document.getElementById("debugContent").innerHTML =
+        "Lat: " + lat + "<br>" +
+        "Lon: " + lon + "<br>" +
+        "Distance: " + dist.toFixed(2) + " m<br>" +
+        "Accuracy: ±" + acc.toFixed(2) + " m<br>" +
+        "Status: " + status + "<br>" +
+        "Type: " + submissionType;
 
-    } else {
-      document.getElementById("statusText").innerHTML =
-        "❌ Not within allowed distance";
+      document.getElementById("debugLink").href =
+        formURL;
+
+      console.log("FORM URL:", formURL);
+
     }
+
+
+    /* =========================
+       NORMAL MODE
+    ========================= */
+
+    else {
+
+      if (status === "VALID") {
+
+        document.getElementById("statusText").innerHTML =
+          "✅ Location verified. Redirecting...";
+
+        setTimeout(function() {
+
+          window.location.href = formURL;
+
+        }, 1200);
+
+      }
+
+      else {
+
+        document.getElementById("statusText").innerHTML =
+          "❌ You are outside the allowed attendance area.";
+
+      }
+
+    }
+
+  },
+
+
+  /* =========================
+     GPS ERROR
+  ========================= */
+
+  function(error) {
+
+    console.error(error);
+
+    document.getElementById("statusText").innerHTML =
+      "❌ Unable to obtain your location. Please enable GPS/location permission and try again.";
+
+  },
+
+
+  /* =========================
+     GPS OPTIONS
+  ========================= */
+
+  {
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 0
   }
 
-}, function(){
-  document.getElementById("statusText").innerHTML =
-    "❌ GPS permission denied";
-}, {
-  enableHighAccuracy: true,
-  timeout: 10000,
-  maximumAge: 0
-});
+);
+
 </script>
 
 </body>
