@@ -108,13 +108,13 @@ navigator.geolocation.getCurrentPosition(function(position){
   } else {
 
     // ⏰ Submission #1
-    if (isWithin(12,50,13,0)) {
+    if (isWithin(17,50,18,10)) {
       submissionType = "Submission 1";
       localStorage.setItem("attend1","done");
     }
 
     // ⏰ Submission #2
-    else if (isWithin(14,30,16,0)) {
+    else if (isWithin(20,30,21,00)) {
 
       if (localStorage.getItem("attend1") === "done") {
         submissionType = "Submission 2";
@@ -135,7 +135,7 @@ navigator.geolocation.getCurrentPosition(function(position){
      FORM URL
   ========================= */
   const formURL =
-    "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=qbE7psJIi0SGkzMXsAyn-3ei0yfHnBpAl7nvufhpYcZUMlhWNlg3NzAwVUVNNk5UOTVZQzhLWEVMSy4u"
+    "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=qbE7psJIi0SGkzMXsAyn-3ei0yfHnBpAl7nvufhpYcZUNDJVQ1o5WUZZVEFOWjdBRk0xWURWWkhLWi4u"
     + "&r958810d0e940488d91f69e1d7e8b9287=" + encodeURIComponent(lat)
     + "&r27336dc45ec8471c8f0e826133916aea=" + encodeURIComponent(lon)
     + "&r4e931dc60dfa4ae0a91683796aa34472=" + encodeURIComponent(dist.toFixed(2))
