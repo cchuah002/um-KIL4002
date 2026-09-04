@@ -1,115 +1,253 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
+
 <head>
+  <meta charset="UTF-8">
+
+<meta name="viewport"
+     content="width=device-width, initial-scale=1.0">
+
   <title>UM Attendance Verification</title>
+
   <style>
+
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       text-align: center;
-      margin-top: 40px;
+      margin: 0;
+      padding: 40px 20px;
+      background: #f5f5f5;
     }
 
-```
-#debugPanel {
-  display: none;
-  border: 1px solid #ccc;
-  padding: 15px;
-  margin-top: 20px;
-  text-align: left;
-  width: 80%;
-  margin-left: auto;
-  margin-right: auto;
-  background: #f7f7f7;
-}
-```
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 30px 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    #statusText {
+      margin-top: 25px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    #details {
+      margin-top: 20px;
+      line-height: 1.8;
+      font-size: 16px;
+    }
+
+    #debugPanel {
+      display: none;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-top: 25px;
+      text-align: left;
+      background: #f7f7f7;
+      border-radius: 8px;
+      word-break: break-word;
+    }
+
+    #debugLink {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 15px;
+      background: #333;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+    }
+
+    .loading {
+      margin-top: 20px;
+    }
 
   </style>
+
 </head>
 
 <body>
 
-<h3 id="statusText">Verifying your location...</h3>
-<div id="details"></div>
+<div class="container">
 
-<div id="debugPanel">
-  <h4>🛠 Debug Mode</h4>
-  <div id="debugContent"></div>
-  <br>
-  <a id="debugLink" href="#" target="_blank">🔗 Open Form</a>
+  <h2>UM Attendance</h2>
+
+  <div class="loading">
+    <h3 id="statusText">
+      📍 Verifying your location...
+    </h3>
+  </div>
+
+  <div id="details"></div>
+
+  <!-- =========================
+       DEBUG PANEL
+  ========================== -->
+
+  <div id="debugPanel">
+
+```
+<h4>🛠 Debug Mode</h4>
+
+<div id="debugContent"></div>
+
+<br>
+
+<a id="debugLink"
+   href="#"
+   target="_blank">
+   🔗 Open Microsoft Form
+</a>
+```
+
+  </div>
+
 </div>
 
 <script>
 
-/* =========================
-   🔐 DEBUG MODE
-========================= */
 
-const urlParams = new URLSearchParams(window.location.search);
+/* =========================================================
+   DEBUG MODE
+   =========================================================
+
+   Normal attendance link:
+
+   https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/
+
+   Debug link:
+
+   https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/?debug=UM_ADMIN_2026
+
+========================================================= */
+
+const urlParams =
+  new URLSearchParams(window.location.search);
 
 const DEBUG =
-  (urlParams.get("debug") || "").trim() === "UM_ADMIN_2026";
+  (urlParams.get("debug") || "").trim()
+  === "UM_ADMIN_2026";
 
 
 if (DEBUG) {
-  document.getElementById("debugPanel").style.display = "block";
+
+  document.getElementById("debugPanel")
+    .style.display = "block";
+
   console.log("DEBUG MODE ACTIVE");
+
 }
 
 
-/* =========================
-   CONFIG
-========================= */
+/* =========================================================
+   CLASS LOCATION
+========================================================= */
 
-const classLat = 3.116635724520063;
-const classLon = 101.65595507854434;
+const classLat =
+  3.116635724520063;
 
-const allowedRadius = 200;
+const classLon =
+  101.65595507854434;
 
 
-/* =========================
-   DISTANCE FUNCTION
-========================= */
+/* =========================================================
+   ALLOWED ATTENDANCE RADIUS
+========================================================= */
+
+const allowedRadius = 200; // metres
+
+
+/* =========================================================
+   MICROSOFT FORMS LINK
+========================================================= */
+
+const microsoftForm =
+  "https://forms.cloud.microsoft/r/5vjGf91u0e";
+
+
+/* =========================================================
+   DISTANCE CALCULATION
+========================================================= */
 
 function toRad(x) {
+
   return x * Math.PI / 180;
+
 }
 
 
-function calculateDistance(lat1, lon1, lat2, lon2) {
+function calculateDistance(
+  lat1,
+  lon1,
+  lat2,
+  lon2
+) {
 
   const R = 6371000;
 
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
+  const dLat =
+    toRad(lat2 - lat1);
+
+  const dLon =
+    toRad(lon2 - lon1);
+
 
   const a =
     Math.sin(dLat / 2) ** 2 +
+
     Math.cos(toRad(lat1)) *
+
     Math.cos(toRad(lat2)) *
+
     Math.sin(dLon / 2) ** 2;
 
+
   return 2 * R *
+
     Math.atan2(
       Math.sqrt(a),
       Math.sqrt(1 - a)
     );
+
 }
 
 
-/* =========================
-   MAIN
-========================= */
+/* =========================================================
+   GET GPS LOCATION
+========================================================= */
 
 navigator.geolocation.getCurrentPosition(
 
   function(position) {
 
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-    const acc = position.coords.accuracy;
 
-    const dist =
+    /* =====================================================
+       GPS INFORMATION
+    ===================================================== */
+
+    const lat =
+      position.coords.latitude;
+
+    const lon =
+      position.coords.longitude;
+
+    const accuracy =
+      position.coords.accuracy;
+
+
+    /* =====================================================
+       CALCULATE DISTANCE
+    ===================================================== */
+
+    const distance =
       calculateDistance(
         classLat,
         classLon,
@@ -118,101 +256,187 @@ navigator.geolocation.getCurrentPosition(
       );
 
 
-    /* =========================
-       LOCATION STATUS
-    ========================= */
+    /* =====================================================
+       DETERMINE STATUS
+    ===================================================== */
 
     const status =
-      (dist <= allowedRadius)
+      distance <= allowedRadius
         ? "VALID"
         : "INVALID";
 
 
-    /* =========================
+    /* =====================================================
        SUBMISSION TYPE
-    ========================= */
+    ===================================================== */
 
-    const submissionType = "Attendance";
-
-
-    /* =========================
-       FORM URL
-    ========================= */
-
-    /*
-      IMPORTANT:
-      Replace the parameter names below with the
-      actual pre-filled field parameters generated
-      by Microsoft Forms.
-    */
-
-    const formURL =
-      "https://forms.cloud.microsoft/r/5vjGf91u0e"
-      + "?Latitude=" + encodeURIComponent(lat)
-      + "&Longitude=" + encodeURIComponent(lon)
-      + "&Distance=" + encodeURIComponent(dist.toFixed(2))
-      + "&Status=" + encodeURIComponent(status)
-      + "&SubmissionType=" + encodeURIComponent(submissionType);
+    const submissionType =
+      "Attendance";
 
 
-    /* =========================
-       DISPLAY DETAILS
-    ========================= */
+    /* =====================================================
+       DISPLAY INFORMATION
+    ===================================================== */
 
     document.getElementById("details").innerHTML =
-      "Distance: " + dist.toFixed(2) + " m<br>" +
-      "Status: " + status + "<br>" +
-      "Type: " + submissionType;
+
+      "Distance: "
+      + distance.toFixed(2)
+      + " m<br>"
+
+      + "Status: "
+      + status
+      + "<br>"
+
+      + "Submission Type: "
+      + submissionType;
 
 
-    /* =========================
+    /* =====================================================
        DEBUG MODE
-    ========================= */
+    ===================================================== */
 
     if (DEBUG) {
 
-      document.getElementById("statusText").innerHTML =
-        "🛠 Debug Mode (No Redirect)";
 
-      document.getElementById("debugContent").innerHTML =
-        "Lat: " + lat + "<br>" +
-        "Lon: " + lon + "<br>" +
-        "Distance: " + dist.toFixed(2) + " m<br>" +
-        "Accuracy: ±" + acc.toFixed(2) + " m<br>" +
-        "Status: " + status + "<br>" +
-        "Type: " + submissionType;
+      document.getElementById("statusText")
+        .innerHTML =
+        "🛠 Debug Mode";
 
-      document.getElementById("debugLink").href =
-        formURL;
 
-      console.log("FORM URL:", formURL);
+      document.getElementById("debugContent")
+        .innerHTML =
+
+        "<strong>Latitude:</strong> "
+        + lat
+        + "<br>"
+
+        + "<strong>Longitude:</strong> "
+        + lon
+        + "<br>"
+
+        + "<strong>Distance:</strong> "
+        + distance.toFixed(2)
+        + " m<br>"
+
+        + "<strong>GPS Accuracy:</strong> ±"
+        + accuracy.toFixed(2)
+        + " m<br>"
+
+        + "<strong>Status:</strong> "
+        + status
+        + "<br>"
+
+        + "<strong>Submission Type:</strong> "
+        + submissionType
+        + "<br><br>"
+
+        + "<strong>Microsoft Forms:</strong><br>"
+        + microsoftForm;
+
+
+      /*
+        In debug mode, DO NOT redirect.
+      */
+
+      document.getElementById("debugLink")
+        .href =
+        microsoftForm;
+
+
+      console.log(
+        "Latitude:",
+        lat
+      );
+
+      console.log(
+        "Longitude:",
+        lon
+      );
+
+      console.log(
+        "Distance:",
+        distance
+      );
+
+      console.log(
+        "Accuracy:",
+        accuracy
+      );
+
+      console.log(
+        "Status:",
+        status
+      );
 
     }
 
 
-    /* =========================
-       NORMAL MODE
-    ========================= */
+    /* =====================================================
+       NORMAL ATTENDANCE MODE
+    ===================================================== */
 
     else {
 
+
       if (status === "VALID") {
 
-        document.getElementById("statusText").innerHTML =
-          "✅ Location verified. Redirecting...";
 
-        setTimeout(function() {
+        document.getElementById("statusText")
+          .innerHTML =
+          "✅ Location verified";
 
-          window.location.href = formURL;
 
-        }, 1200);
+        document.getElementById("details")
+          .innerHTML =
+
+          "Distance: "
+          + distance.toFixed(2)
+          + " m<br><br>"
+
+          + "Opening attendance form...";
+
+
+        /*
+          Wait 1.2 seconds before redirecting.
+        */
+
+        setTimeout(
+          function() {
+
+            window.location.href =
+              microsoftForm;
+
+          },
+          1200
+        );
+
 
       }
 
+
       else {
 
-        document.getElementById("statusText").innerHTML =
-          "❌ You are outside the allowed attendance area.";
+
+        document.getElementById("statusText")
+          .innerHTML =
+          "❌ Attendance Not Verified";
+
+
+        document.getElementById("details")
+          .innerHTML =
+
+          "You are outside the allowed "
+          + "attendance area.<br><br>"
+
+          + "Distance detected: "
+          + distance.toFixed(2)
+          + " m<br>"
+
+          + "Allowed distance: "
+          + allowedRadius
+          + " m";
+
 
       }
 
@@ -221,33 +445,60 @@ navigator.geolocation.getCurrentPosition(
   },
 
 
-  /* =========================
+  /* =========================================================
      GPS ERROR
-  ========================= */
+  ========================================================= */
 
   function(error) {
 
-    console.error(error);
 
-    document.getElementById("statusText").innerHTML =
-      "❌ Unable to obtain your location. Please enable GPS/location permission and try again.";
+    console.error(
+      "GPS Error:",
+      error
+    );
+
+
+    document.getElementById("statusText")
+      .innerHTML =
+      "❌ Unable to obtain your location";
+
+
+    document.getElementById("details")
+      .innerHTML =
+
+      "Please make sure that:<br><br>"
+
+      + "1. Location/GPS is enabled.<br>"
+
+      + "2. Your browser has location permission.<br>"
+
+      + "3. You are using HTTPS.<br><br>"
+
+      + "Then refresh this page.";
+
 
   },
 
 
-  /* =========================
+  /* =========================================================
      GPS OPTIONS
-  ========================= */
+  ========================================================= */
 
   {
+
     enableHighAccuracy: true,
+
     timeout: 10000,
+
     maximumAge: 0
+
   }
 
 );
 
+
 </script>
 
 </body>
+
 </html>
